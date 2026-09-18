@@ -53,3 +53,28 @@ def upload_file(
         "drop_id": drop_id,
         "filename": filename
     }
+
+@app.get("/drops/{drop_id}")
+def get_drop(drop_id: str):
+    drop_folder = os.path.join(UPLOAD_DIR, drop_id)
+
+    if not os.path.exists(drop_folder):
+        raise HTTPException(
+            status_code=404,
+            detail="Drop not found"
+        )
+
+    files = []
+
+    for filename in os.listdir(drop_folder):
+        file_path = os.path.join(drop_folder, filename)
+
+        if os.path.isfile(file_path):
+            files.append({
+                "filename": filename
+            })
+
+    return {
+        "drop_id": drop_id,
+        "files": files
+    }
