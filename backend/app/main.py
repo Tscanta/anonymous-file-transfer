@@ -4,6 +4,7 @@ import secrets
 import string
 import os
 import shutil
+import mimetypes
 
 app = FastAPI(title="Anonymous File Transfer")
 
@@ -134,10 +135,12 @@ def download_file(file_id: str):
 
                 from fastapi.responses import FileResponse
 
+                media_type, _ = mimetypes.guess_type(filename)
+
                 return FileResponse(
                     path=file_path,
                     filename=filename,
-                    media_type="application/octet-stream"
+                    media_type=media_type or "application/octet-stream"
                 )
 
     raise HTTPException(

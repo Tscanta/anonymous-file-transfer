@@ -18,6 +18,10 @@
 let opening = false;
 let openError = "";
 
+function isImage(filename: string) {
+  return /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(filename);
+}
+
   function handleFiles(event: Event) {
     const input = event.target as HTMLInputElement;
 
@@ -329,18 +333,47 @@ let openError = "";
 
             <div class="file-row">
 
-              <div class="file-name">
-                📄 {file.filename}
-              </div>
+  <div class="file-preview">
 
-              <a
-                class="download-button"
-                href={`http://127.0.0.1:8000/files/${file.file_id}/download`}
-              >
-                ↓ Download
-              </a>
+    {#if isImage(file.filename)}
 
-            </div>
+      <img
+        src={`http://127.0.0.1:8000/files/${file.file_id}/download`}
+        alt={file.filename}
+      />
+
+    {:else}
+
+      <div class="file-icon">
+        📄
+      </div>
+
+    {/if}
+
+  </div>
+
+
+  <div class="file-info">
+
+    <div class="file-name">
+      {file.filename}
+    </div>
+
+    <div class="file-type">
+      {file.filename.split(".").pop()?.toUpperCase() ?? "FILE"}
+    </div>
+
+  </div>
+
+
+  <a
+    class="download-button"
+    href={`http://127.0.0.1:8000/files/${file.file_id}/download`}
+  >
+    ↓ Download
+  </a>
+
+</div>
 
           {/each}
 
