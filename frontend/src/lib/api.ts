@@ -11,3 +11,24 @@ export async function createDrop() {
 
   return await response.json();
 }
+
+
+export async function uploadFile(dropId: string, file: File) {
+  const formData = new FormData();
+
+  formData.append("file", file);
+
+  const response = await fetch(
+    `${API_URL}/drops/${dropId}/files`,
+    {
+      method: "POST",
+      body: formData
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to upload ${file.name}`);
+  }
+
+  return await response.json();
+}

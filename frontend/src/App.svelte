@@ -1,12 +1,45 @@
 <script lang="ts">
+  import { createDrop, uploadFile } from "./lib/api";
+
   let selectedFiles: File[] = [];
   let dropCode = "";
+
+  let creating = false;
+  let error = "";
 
   function handleFiles(event: Event) {
     const input = event.target as HTMLInputElement;
 
     if (input.files) {
       selectedFiles = Array.from(input.files);
+    }
+  }
+
+
+  async function handleCreateDrop() {
+    if (selectedFiles.length === 0) {
+      return;
+    }
+
+    creating = true;
+    error = "";
+
+    try {
+      // 1. Create the Drop
+      const drop = await createDrop();
+
+      dropCode = drop.drop_id;
+
+      // 2. Upload every selected file
+      for (const file of selectedFiles) {
+        await uploadFile(dropCode, file);
+      }
+
+    } catch (err) {
+      console.error(err);
+      error = "Could not create drop or upload files.";
+    } finally {
+      creating = false;
     }
   }
 </script>
@@ -118,9 +151,38 @@
                   </div>
                 {/each}
               </div>
-              <button class="retro-button">
-                🚀 &nbsp; Create Drop
+              <button
+                class="retro-button"
+                onclick={handleCreateDrop}
+                disabled={creating}
+              >
+                {creating ? "Creating Drop..." : "📃  Create Drop"}
               </button>
+
+              {#if dropCode}
+                <div class="drop-created">
+
+                  <div class="drop-created-title">
+                    DROP CREATED!
+                  </div>
+
+                  <div class="drop-code">
+                    {dropCode}
+                  </div>
+
+                  <p>
+                    Your files are ready.
+                    Enter this code on another device.
+                  </p>
+
+                </div>
+              {/if}
+
+              {#if error}
+                <div class="error">
+                  {error}
+                </div>
+              {/if}
             {/if}
           </div>
 
