@@ -400,3 +400,54 @@ footer a {
   }
 
 }
+
+/* DROP CREATED */
+
+.drop-created {
+  margin-top: 20px;
+  padding: 15px;
+
+  border: 2px solid #2456a8;
+
+  background: #e8f2ff;
+
+  box-shadow:
+    inset 2px 2px white,
+    inset -2px -2px #7999c8;
+}
+
+.drop-created-title {
+  font-weight: bold;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.drop-code {
+  padding: 12px;
+
+  font-size: 28px;
+  font-weight: bold;
+  letter-spacing: 4px;
+
+  color: #123a91;
+
+  background: white;
+
+  border: 2px inset #8aa4c7;
+}
+
+.drop-created p {
+  margin: 10px 0 0;
+  font-size: 12px;
+}
+
+.error {
+  margin-top: 15px;
+  padding: 10px;
+
+  color: #8b0000;
+
+  background: #ffe5e5;
+
+  border: 2px solid #b66;
+}

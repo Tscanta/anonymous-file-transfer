@@ -1,5 +1,25 @@
 <script lang="ts">
+  import { createDrop } from "./lib/api";
+
   let dropCode = "";
+  let createdDropCode = "";
+  let loading = false;
+  let error = "";
+
+  async function handleCreateDrop() {
+    loading = true;
+    error = "";
+
+    try {
+      const data = await createDrop();
+
+      createdDropCode = data.drop_id;
+    } catch (err) {
+      error = "Could not create drop.";
+    } finally {
+      loading = false;
+    }
+  }
 </script>
 
 <svelte:head>
@@ -81,13 +101,39 @@
 
           <div class="action">
 
-            <button class="retro-button">
-              📄 &nbsp; Create a Drop
+            <button
+              class="retro-button"
+              onclick={handleCreateDrop}
+              disabled={loading}
+            >
+              {loading ? "Creating..." : "📄  Create a Drop"}
             </button>
 
             <small>
               Generate a unique code to start sharing.
             </small>
+
+            {#if createdDropCode}
+              <div class="drop-created">
+                <div class="drop-created-title">
+                  DROP CREATED!
+                </div>
+
+                <div class="drop-code">
+                  {createdDropCode}
+                </div>
+
+                <p>
+                  Enter this code on another device to access your files.
+                </p>
+              </div>
+            {/if}
+
+            {#if error}
+              <div class="error">
+                {error}
+              </div>
+            {/if}
 
           </div>
 

@@ -1,4 +1,5 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 import secrets
 import string
 import os
@@ -6,11 +7,19 @@ import shutil
 
 app = FastAPI(title="Anonymous File Transfer")
 
+# Fixing Cors Error - Cors = error when connecting frontend and backend, because both have different links
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 UPLOAD_DIR = "uploads"
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
-
 
 def generate_drop_id(length: int = 8) -> str:
     characters = string.ascii_uppercase + string.digits
