@@ -1,11 +1,22 @@
 <script lang="ts">
-  import { createDrop, uploadFile } from "./lib/api";
+  import { createDrop, uploadFile, getDrop } from "./lib/api";
 
   let selectedFiles: File[] = [];
   let dropCode = "";
 
   let creating = false;
   let error = "";
+
+  let openedDrop: {
+  drop_id: string;
+  files: {
+    file_id: string;
+    filename: string;
+  }[];
+} | null = null;
+
+let opening = false;
+let openError = "";
 
   function handleFiles(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -14,7 +25,6 @@
       selectedFiles = Array.from(input.files);
     }
   }
-
 
   async function handleCreateDrop() {
     if (selectedFiles.length === 0) {
@@ -42,6 +52,36 @@
       creating = false;
     }
   }
+  async function handleOpenDrop() {
+  if (!dropCode.trim()) {
+    openError = "Please enter a drop code.";
+    return;
+  }
+
+  opening = true;
+  openError = "";
+  openedDrop = null;
+
+  try {
+    const data = await getDrop(
+      dropCode.trim().toUpperCase()
+    );
+
+    openedDrop = data;
+
+  } catch (err) {
+    console.error(err);
+
+    if (err instanceof Error) {
+      openError = err.message;
+    } else {
+      openError = "Could not open drop.";
+    }
+
+  } finally {
+    opening = false;
+  }
+}
 </script>
 
 <svelte:head>
@@ -208,8 +248,12 @@
               maxlength="8"
             />
 
-            <button class="retro-button">
-              📁 &nbsp; Open Drop
+            <button
+              class="retro-button"
+              onclick={handleOpenDrop}
+              disabled={opening}
+            >
+              {opening ? "Opening Drop..." : "📁  Open Drop"}
             </button>
 
           </div>
@@ -260,6 +304,60 @@
 
   </div>
 
+  {#if openedDrop}
+  <section class="drop-view panel">
+
+    <div class="panel-title">
+      :: drop {openedDrop.drop_id}
+    </div>
+
+    <div class="drop-view-body">
+
+      <h2>Files in this drop</h2>
+
+      {#if openedDrop.files.length === 0}
+
+        <p class="empty-drop">
+          This drop is empty.
+        </p>
+
+      {:else}
+
+        <div class="file-list">
+
+          {#each openedDrop.files as file}
+
+            <div class="file-row">
+
+              <div class="file-name">
+                📄 {file.filename}
+              </div>
+
+              <a
+                class="download-button"
+                href={`http://127.0.0.1:8000/files/${file.file_id}/download`}
+              >
+                ↓ Download
+              </a>
+
+            </div>
+
+          {/each}
+
+        </div>
+
+      {/if}
+
+    </div>
+
+  </section>
+{/if}
+
+{#if openError}
+  <div class="open-error">
+    {openError}
+  </div>
+{/if}
 
   <footer>
 

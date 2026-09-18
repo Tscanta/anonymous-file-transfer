@@ -32,3 +32,19 @@ export async function uploadFile(dropId: string, file: File) {
 
   return await response.json();
 }
+
+export async function getDrop(dropId: string) {
+  const response = await fetch(
+    `${API_URL}/drops/${dropId}`
+  );
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error("Drop not found");
+    }
+
+    throw new Error("Failed to load drop");
+  }
+
+  return await response.json();
+}
