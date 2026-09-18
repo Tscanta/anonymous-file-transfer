@@ -18,6 +18,54 @@
 let opening = false;
 let openError = "";
 
+let dropFiles: File[] = [];
+
+let uploading = false;
+let uploadError = "";
+
+function handleDropFiles(event: Event) {
+  const input = event.target as HTMLInputElement;
+
+  if (input.files) {
+    dropFiles = Array.from(input.files);
+  }
+}
+
+async function handleUploadFiles() {
+  if (!openedDrop || dropFiles.length === 0) {
+    return;
+  }
+
+  uploading = true;
+  uploadError = "";
+
+  try {
+    for (const file of dropFiles) {
+      await uploadFile(openedDrop.drop_id, file);
+    }
+
+    // Refresh the Drop
+    const updatedDrop = await getDrop(openedDrop.drop_id);
+
+    openedDrop = updatedDrop;
+
+    // Clear selected files
+    dropFiles = [];
+
+  } catch (err) {
+    console.error(err);
+
+    if (err instanceof Error) {
+      uploadError = err.message;
+    } else {
+      uploadError = "Could not upload files.";
+    }
+
+  } finally {
+    uploading = false;
+  }
+}
+
 function isImage(filename: string) {
   return /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(filename);
 }
@@ -318,6 +366,56 @@ function isImage(filename: string) {
     <div class="drop-view-body">
 
       <h2>Files in this drop</h2>
+      <div class="drop-upload">
+      <label class="file-picker">
+        📁 &nbsp; Add Files
+
+        <input
+          type="file"
+          multiple
+          onchange={handleDropFiles}
+        />
+      </label>
+
+      <small>
+        Add more files to this drop.
+      </small>
+
+
+      {#if dropFiles.length > 0}
+
+        <div class="drop-selected-files">
+
+          <div class="selected-title">
+            {dropFiles.length} file(s) selected:
+          </div>
+
+          {#each dropFiles as file}
+
+            <div class="file-item">
+              📄 {file.name}
+            </div>
+
+          {/each}
+
+        </div>
+
+
+        <button
+          class="retro-button"
+          onclick={handleUploadFiles}
+          disabled={uploading}
+        >
+          {uploading ? "Uploading..." : "⬆ Upload Files"}
+        </button>
+        {#if uploadError}
+          <div class="error">
+            {uploadError}
+          </div>
+        {/if}
+      {/if}
+
+    </div>
 
       {#if openedDrop.files.length === 0}
 

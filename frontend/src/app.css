@@ -736,3 +736,38 @@ footer a {
 .download-button:hover {
   background: white;
 }
+
+/* DROP UPLOAD */
+
+.drop-upload {
+  margin-bottom: 25px;
+
+  padding: 15px;
+
+  border: 2px dotted #7999c8;
+
+  background: #eef5ff;
+}
+
+.drop-upload small {
+  display: block;
+
+  margin-top: 8px;
+
+  color: #536887;
+}
+
+.drop-selected-files {
+  margin-top: 15px;
+
+  padding: 10px;
+
+  text-align: left;
+
+  border: 2px solid #7999c8;
+
+  background: white;
+
+  box-shadow:
+    inset 2px 2px #ccc;
+}
