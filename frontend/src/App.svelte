@@ -2,117 +2,184 @@
   let dropCode = "";
 </script>
 
-<main>
-  <div class="container">
-    <h1>Anonymous Transfer</h1>
+<svelte:head>
+  <title>zebraAFT - Anonymous File Transfer</title>
+</svelte:head>
 
-    <p class="subtitle">
-      Move files between devices without signing in.
-    </p>
+<div class="page">
 
-    <button class="create-button">
-      Create a Drop
-    </button>
-
-    <div class="divider">
-      <span>or</span>
+  <header class="header">
+    <div class="logo">
+      <span class="logo-main">zebra<span>AFT</span></span>
+      <span class="logo-sub">anonymous file transfer</span>
     </div>
 
-    <div class="open-drop">
-      <label for="dropCode">Drop Code</label>
-
-      <input
-        id="dropCode"
-        type="text"
-        placeholder="Enter your drop code"
-        bind:value={dropCode}
-      />
-
-      <button class="open-button">
-        Open Drop
-      </button>
+    <div class="tagline">
+      same files.<br />
+      different places.<br />
+      no accounts.
     </div>
+  </header>
+
+
+  <div class="layout">
+
+    <aside class="sidebar">
+
+      <section class="panel">
+        <div class="panel-title">:: navigation</div>
+
+        <div class="nav">
+          <a href="/">&gt; home</a>
+          <a href="/">&gt; about</a>
+          <a href="/">&gt; faq</a>
+          <a href="/">&gt; source</a>
+        </div>
+      </section>
+
+
+      <section class="panel">
+        <div class="panel-title">:: status</div>
+
+        <div class="status">
+          <div>
+            <span class="status-light"></span>
+            server online
+          </div>
+
+          <div>
+            <span class="status-light"></span>
+            no login required
+          </div>
+
+          <div>
+            <span class="status-light"></span>
+            anonymous mode
+          </div>
+        </div>
+      </section>
+
+    </aside>
+
+
+    <main class="content">
+
+      <section class="panel welcome">
+
+        <div class="panel-title">
+          :: welcome to zebraAFT
+        </div>
+
+        <div class="welcome-body">
+
+          <h1>Share files between devices.</h1>
+
+          <p>
+            No accounts. No tracking. Just files.
+          </p>
+
+
+          <div class="action">
+
+            <button class="retro-button">
+              📄 &nbsp; Create a Drop
+            </button>
+
+            <small>
+              Generate a unique code to start sharing.
+            </small>
+
+          </div>
+
+
+          <div class="or">
+            <span>────────</span>
+            <b>or</b>
+            <span>────────</span>
+          </div>
+
+
+          <div class="action">
+
+            <label for="dropCode">
+              Enter a drop code
+            </label>
+
+            <input
+              id="dropCode"
+              type="text"
+              placeholder="e.g. K7X2P9QM"
+              bind:value={dropCode}
+              maxlength="8"
+            />
+
+            <button class="retro-button">
+              📁 &nbsp; Open Drop
+            </button>
+
+          </div>
+
+        </div>
+
+      </section>
+
+    </main>
+
+
+    <aside class="sidebar right">
+
+      <section class="panel">
+
+        <div class="panel-title">
+          :: info
+        </div>
+
+        <div class="info">
+
+          <p>Fast.</p>
+          <p>Simple.</p>
+          <p>Anonymous.</p>
+          <p>Built for everyone.</p>
+
+          <div class="globe">
+            🌐
+          </div>
+
+          <p class="quote">
+            "A simpler internet<br />
+            is possible."
+          </p>
+
+          <hr />
+
+          <p>
+            v0.1.0<br />
+            zebraAFT
+          </p>
+
+        </div>
+
+      </section>
+
+    </aside>
+
   </div>
-</main>
 
-<style>
-  :global(*) {
-    box-sizing: border-box;
-  }
 
-  :global(body) {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #f5f5f5;
-  }
+  <footer>
 
-  main {
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
+    <span>
+      © 2025 zebraAFT
+    </span>
 
-  .container {
-    width: 100%;
-    max-width: 450px;
-    padding: 40px;
-    background: white;
-    border-radius: 16px;
-    text-align: center;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-  }
+    <span class="footer-links">
+      <a href="/">privacy</a>
+      |
+      <a href="/">terms</a>
+      |
+      <a href="/">github</a>
+    </span>
 
-  h1 {
-    margin: 0;
-    font-size: 32px;
-  }
+  </footer>
 
-  .subtitle {
-    color: #666;
-    margin: 12px 0 30px;
-  }
-
-  button {
-    width: 100%;
-    padding: 14px;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    cursor: pointer;
-  }
-
-  .create-button {
-    background: #111;
-    color: white;
-  }
-
-  .divider {
-    margin: 25px 0;
-    color: #999;
-  }
-
-  .open-drop {
-    text-align: left;
-  }
-
-  label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: bold;
-  }
-
-  input {
-    width: 100%;
-    padding: 14px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-size: 16px;
-    margin-bottom: 12px;
-  }
-
-  .open-button {
-    background: #eee;
-    color: #111;
-  }
-</style>
+</div>
