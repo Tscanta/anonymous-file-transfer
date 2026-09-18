@@ -674,7 +674,65 @@ footer a {
 /* NON-IMAGE FILE ICON */
 
 .file-icon {
-  font-size: 38px;
+  width: 75px;
+  height: 75px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-family: "Courier New", monospace;
+  font-size: 15px;
+  font-weight: bold;
+
+  color: white;
+
+  border: 2px solid #526f9e;
+
+  background: #7999c8;
+
+  box-shadow:
+    inset 2px 2px rgba(255,255,255,0.7),
+    inset -2px -2px #526f9e;
+}
+.file-icon-pdf {
+  background: #c44;
+}
+
+.file-icon-video {
+  background: #536887;
+}
+
+.file-icon-audio {
+  background: #765a9e;
+}
+
+.file-icon-zip {
+  background: #a17a35;
+}
+
+.file-icon-psd {
+  background: #2878a8;
+}
+
+.file-icon-code {
+  background: #333d4d;
+}
+
+.file-icon-doc {
+  background: #3971ad;
+}
+
+.file-icon-xls {
+  background: #43834f;
+}
+
+.file-icon-ppt {
+  background: #b45b35;
+}
+
+.file-icon-text {
+  background: #6b7f9e;
 }
 
 
@@ -770,4 +828,126 @@ footer a {
 
   box-shadow:
     inset 2px 2px #ccc;
+}
+
+/* UPLOAD PROGRESS */
+
+.upload-progress {
+  margin-top: 15px;
+
+  padding: 12px;
+
+  border: 2px solid #7999c8;
+
+  background: #eef5ff;
+
+  font-size: 13px;
+}
+
+.progress-text {
+  margin-bottom: 8px;
+
+  font-weight: bold;
+}
+
+.progress-bar {
+  height: 20px;
+
+  border: 2px inset #8aa4c7;
+
+  background: white;
+
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+
+  background: linear-gradient(
+    #6fa7e8,
+    #2e66b5
+  );
+
+  transition: width 0.2s ease;
+}
+
+.current-upload {
+  margin-top: 8px;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  color: #536887;
+}
+
+/* DELETE DROP */
+
+.drop-danger-zone {
+  margin-top: 25px;
+  padding-top: 15px;
+
+  border-top: 1px dotted #8ba1c2;
+
+  text-align: right;
+}
+
+.delete-button {
+  padding: 9px 14px;
+
+  color: #8b0000;
+
+  font-family: "Courier New", monospace;
+  font-weight: bold;
+
+  border: 2px solid #a66;
+
+  background: #ffe5e5;
+
+  box-shadow:
+    inset 2px 2px white,
+    inset -2px -2px #c99;
+
+  cursor: pointer;
+}
+
+.delete-button:hover {
+  background: #ffd5d5;
+}
+
+/* DROP LIFETIME */
+
+.drop-lifetime {
+  padding: 12px;
+
+  text-align: left;
+
+  border: 2px solid #7999c8;
+
+  background: #eef5ff;
+
+  box-shadow:
+    inset 2px 2px white;
+}
+
+.lifetime-title {
+  margin-bottom: 10px;
+
+  font-weight: bold;
+}
+
+.lifetime-option {
+  display: block;
+
+  padding: 6px 0;
+
+  font-size: 14px;
+
+  cursor: pointer;
+}
+
+.lifetime-option input {
+  width: auto;
+
+  margin-right: 8px;
 }

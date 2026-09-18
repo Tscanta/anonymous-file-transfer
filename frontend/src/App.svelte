@@ -1,8 +1,10 @@
 <script lang="ts">
-  import { createDrop, uploadFile, getDrop } from "./lib/api";
+  import { createDrop, uploadFile, getDrop, deleteDrop } from "./lib/api";
 
   let selectedFiles: File[] = [];
   let dropCode = "";
+  let deleteToken = "";
+  let dropLifetime = "24h";
 
   let creating = false;
   let error = "";
@@ -23,6 +25,9 @@ let dropFiles: File[] = [];
 let uploading = false;
 let uploadError = "";
 
+let uploadProgress = 0;
+let currentUpload = "";
+
 function handleDropFiles(event: Event) {
   const input = event.target as HTMLInputElement;
 
@@ -32,25 +37,42 @@ function handleDropFiles(event: Event) {
 }
 
 async function handleUploadFiles() {
+  
   if (!openedDrop || dropFiles.length === 0) {
     return;
   }
 
   uploading = true;
   uploadError = "";
+  uploadProgress = 0;
+  currentUpload = "";
 
   try {
-    for (const file of dropFiles) {
-      await uploadFile(openedDrop.drop_id, file);
+    const totalFiles = dropFiles.length;
+
+    for (let i = 0; i < totalFiles; i++) {
+      const file = dropFiles[i];
+
+      currentUpload = file.name;
+
+      await uploadFile(
+        openedDrop.drop_id,
+        file
+      );
+
+      uploadProgress = i + 1;
     }
 
     // Refresh the Drop
-    const updatedDrop = await getDrop(openedDrop.drop_id);
+    const updatedDrop = await getDrop(
+      openedDrop.drop_id
+    );
 
     openedDrop = updatedDrop;
 
     // Clear selected files
     dropFiles = [];
+    currentUpload = "";
 
   } catch (err) {
     console.error(err);
@@ -69,6 +91,61 @@ async function handleUploadFiles() {
 function isImage(filename: string) {
   return /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(filename);
 }
+function getFileType(filename: string) {
+  const extension = filename
+    .split(".")
+    .pop()
+    ?.toLowerCase();
+
+  if (!extension) {
+    return "FILE";
+  }
+
+  const types: Record<string, string> = {
+    pdf: "PDF",
+
+    mp4: "VIDEO",
+    avi: "VIDEO",
+    mov: "VIDEO",
+    mkv: "VIDEO",
+    webm: "VIDEO",
+
+    mp3: "AUDIO",
+    wav: "AUDIO",
+    ogg: "AUDIO",
+    flac: "AUDIO",
+
+    zip: "ZIP",
+    rar: "ZIP",
+    "7z": "ZIP",
+    tar: "ZIP",
+    gz: "ZIP",
+
+    psd: "PSD",
+
+    py: "CODE",
+    js: "CODE",
+    ts: "CODE",
+    jsx: "CODE",
+    tsx: "CODE",
+    html: "CODE",
+    css: "CODE",
+    json: "CODE",
+
+    doc: "DOC",
+    docx: "DOC",
+
+    txt: "TEXT",
+
+    xls: "XLS",
+    xlsx: "XLS",
+
+    ppt: "PPT",
+    pptx: "PPT"
+  };
+  return types[extension] ?? extension.toUpperCase();
+}
+
 
   function handleFiles(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -78,32 +155,45 @@ function isImage(filename: string) {
     }
   }
 
-  async function handleCreateDrop() {
-    if (selectedFiles.length === 0) {
-      return;
-    }
-
-    creating = true;
-    error = "";
-
-    try {
-      // 1. Create the Drop
-      const drop = await createDrop();
-
-      dropCode = drop.drop_id;
-
-      // 2. Upload every selected file
-      for (const file of selectedFiles) {
-        await uploadFile(dropCode, file);
-      }
-
-    } catch (err) {
-      console.error(err);
-      error = "Could not create drop or upload files.";
-    } finally {
-      creating = false;
-    }
+async function handleCreateDrop() {
+  if (selectedFiles.length === 0) {
+    return;
   }
+
+  creating = true;
+  error = "";
+
+  try {
+    // 1. Create the Drop
+    const drop = await createDrop(dropLifetime);
+
+    dropCode = drop.drop_id;
+    deleteToken = drop.delete_token;
+
+    // 2. Upload every selected file
+    for (const file of selectedFiles) {
+      await uploadFile(dropCode, file);
+    }
+
+    // 3. Automatically open the Drop
+    const opened = await getDrop(dropCode);
+
+    openedDrop = opened;
+
+  } catch (err) {
+    console.error("CREATE DROP ERROR:", err);
+
+    if (err instanceof Error) {
+      error = err.message;
+    } else {
+      error = "Could not create drop or upload files.";
+    }
+
+  } finally {
+    creating = false;
+  }
+}
+
   async function handleOpenDrop() {
   if (!dropCode.trim()) {
     openError = "Please enter a drop code.";
@@ -133,7 +223,42 @@ function isImage(filename: string) {
   } finally {
     opening = false;
   }
-}
+  }
+  async function handleDeleteDrop() {
+  if (!openedDrop || !deleteToken) {
+    return;
+  }
+
+  const confirmed = confirm(
+    "Delete this Drop?\n\nAll files in this Drop will be permanently deleted."
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    await deleteDrop(
+      openedDrop.drop_id,
+      deleteToken
+    );
+
+    openedDrop = null;
+    dropCode = "";
+    deleteToken = "";
+
+  } catch (err) {
+    console.error(err);
+
+    if (err instanceof Error) {
+      uploadError = err.message;
+    } else {
+      uploadError = "Could not delete Drop.";
+    }
+  }
+  }
+
+
 </script>
 
 <svelte:head>
@@ -227,6 +352,33 @@ function isImage(filename: string) {
             <small>
               Select the files you want to transfer.
             </small>
+
+            <div class="drop-lifetime">
+              <div class="lifetime-title">
+                Drop lifetime
+              </div>
+
+              <label class="lifetime-option">
+                <input
+                  type="radio"
+                  name="lifetime"
+                  value="24h"
+                  bind:group={dropLifetime}
+                />
+                Expire after 24 hours
+              </label>
+
+              <label class="lifetime-option">
+                <input
+                  type="radio"
+                  name="lifetime"
+                  value="permanent"
+                  bind:group={dropLifetime}
+                />
+                Keep permanently
+              </label>
+
+            </div>
 
 
             {#if selectedFiles.length > 0}
@@ -366,6 +518,20 @@ function isImage(filename: string) {
     <div class="drop-view-body">
 
       <h2>Files in this drop</h2>
+      <!-- your Add Files / Upload section -->
+      <!-- your file list -->
+
+      {#if deleteToken}
+        <div class="drop-danger-zone">
+          <button
+            class="delete-button"
+            onclick={handleDeleteDrop}
+          >
+            🗑 Delete this Drop
+          </button>
+        </div>
+      {/if}
+
       <div class="drop-upload">
       <label class="file-picker">
         📁 &nbsp; Add Files
@@ -408,13 +574,35 @@ function isImage(filename: string) {
         >
           {uploading ? "Uploading..." : "⬆ Upload Files"}
         </button>
+
+        {#if uploading}
+        <div class="upload-progress">
+
+          <div class="progress-text">
+            Uploading {uploadProgress} / {dropFiles.length}
+          </div>
+
+          <div class="progress-bar">
+            <div
+              class="progress-fill"
+              style={`width: ${(uploadProgress / dropFiles.length) * 100}%`}
+            ></div>
+          </div>
+
+          {#if currentUpload}
+            <div class="current-upload">
+              {currentUpload}
+            </div>
+          {/if}
+        </div>
+      {/if}
+
         {#if uploadError}
           <div class="error">
             {uploadError}
           </div>
         {/if}
       {/if}
-
     </div>
 
       {#if openedDrop.files.length === 0}
@@ -435,15 +623,15 @@ function isImage(filename: string) {
 
     {#if isImage(file.filename)}
 
-      <img
-        src={`http://127.0.0.1:8000/files/${file.file_id}/download`}
-        alt={file.filename}
-      />
+    <img
+      src={`http://127.0.0.1:8000/files/${file.file_id}/download`}
+      alt={file.filename}
+    />
 
     {:else}
 
-      <div class="file-icon">
-        📄
+      <div class={`file-icon file-icon-${getFileType(file.filename).toLowerCase()}`}>
+        {getFileType(file.filename)}
       </div>
 
     {/if}

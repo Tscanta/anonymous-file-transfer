@@ -5,6 +5,9 @@ import string
 import os
 import shutil
 import mimetypes
+import json
+from datetime import datetime, timedelta
+
 
 app = FastAPI(title="Anonymous File Transfer")
 
@@ -19,7 +22,7 @@ app.add_middleware(
 
 
 UPLOAD_DIR = "uploads"
-
+drop_tokens = {}
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 def generate_drop_id(length: int = 8) -> str:
@@ -39,14 +42,63 @@ def root():
 
 
 @app.post("/drops")
-def create_drop():
+def create_drop(lifetime: str = "24h"):
     drop_id = generate_drop_id()
+    delete_token = secrets.token_urlsafe(32)
 
-    drop_folder = os.path.join(UPLOAD_DIR, drop_id)
-    os.makedirs(drop_folder, exist_ok=True)
+    if lifetime not in ["24h", "permanent"]:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid drop lifetime"
+        )
+
+    drop_folder = os.path.join(
+        UPLOAD_DIR,
+        drop_id
+    )
+
+    os.makedirs(
+        drop_folder,
+        exist_ok=True
+    )
+
+    drop_tokens[drop_id] = delete_token
+
+    created_at = datetime.utcnow()
+
+    if lifetime == "24h":
+        expires_at = created_at + timedelta(hours=24)
+        expires_at = expires_at.isoformat()
+    else:
+        expires_at = None
+
+    metadata = {
+        "drop_id": drop_id,
+        "delete_token": delete_token,
+        "created_at": created_at.isoformat(),
+        "expires_at": expires_at
+    }
+
+    metadata_path = os.path.join(
+        drop_folder,
+        "metadata.json"
+    )
+
+    with open(
+        metadata_path,
+        "w",
+        encoding="utf-8"
+    ) as file:
+        json.dump(
+            metadata,
+            file,
+            indent=2
+        )
 
     return {
-        "drop_id": drop_id
+        "drop_id": drop_id,
+        "delete_token": delete_token,
+        "expires_at": expires_at
     }
 
 
@@ -96,16 +148,23 @@ def get_drop(drop_id: str):
     files = []
 
     for stored_filename in os.listdir(drop_folder):
-        file_path = os.path.join(drop_folder, stored_filename)
 
-        if os.path.isfile(file_path):
+        if stored_filename == "metadata.json":
+            continue
 
-            file_id, filename = stored_filename.split("_", 1)
+        file_path = os.path.join(
+            drop_folder,
+            stored_filename
+        )
 
-            files.append({
-                "file_id": file_id,
-                "filename": filename
-            })
+    if os.path.isfile(file_path):
+
+        file_id, filename = stored_filename.split("_", 1)
+
+        files.append({
+            "file_id": file_id,
+            "filename": filename
+        })
 
     return {
         "drop_id": drop_id,
@@ -147,3 +206,35 @@ def download_file(file_id: str):
         status_code=404,
         detail="File not found"
     )
+
+@app.delete("/drops/{drop_id}")
+def delete_drop(
+    drop_id: str,
+    delete_token: str
+):
+    drop_folder = os.path.join(UPLOAD_DIR, drop_id)
+
+    if not os.path.exists(drop_folder):
+        raise HTTPException(
+            status_code=404,
+            detail="Drop not found"
+        )
+
+    # Temporary MVP protection.
+    # The creator's delete token will be stored in memory.
+    stored_token = drop_tokens.get(drop_id)
+
+    if stored_token != delete_token:
+        raise HTTPException(
+            status_code=403,
+            detail="Invalid delete token"
+        )
+
+    shutil.rmtree(drop_folder)
+
+    del drop_tokens[drop_id]
+
+    return {
+        "message": "Drop deleted successfully",
+        "drop_id": drop_id
+    }
