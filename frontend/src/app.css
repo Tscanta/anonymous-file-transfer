@@ -451,3 +451,74 @@ footer a {
 
   border: 2px solid #b66;
 }
+
+/* FILE PICKER */
+
+.file-picker {
+  display: block;
+
+  width: 100%;
+  padding: 15px;
+
+  font-size: 18px;
+  font-weight: bold;
+
+  color: #071b45;
+
+  border: 2px solid #526f9e;
+
+  background: linear-gradient(
+    #f7fbff,
+    #c5d5ec
+  );
+
+  box-shadow:
+    inset 2px 2px white,
+    inset -2px -2px #7c91b1;
+
+  cursor: pointer;
+}
+
+.file-picker:hover {
+  background: linear-gradient(
+    #ffffff,
+    #d6e5f8
+  );
+}
+
+.file-picker input {
+  display: none;
+}
+
+
+/* SELECTED FILES */
+
+.selected-files {
+  padding: 10px;
+
+  text-align: left;
+
+  border: 2px solid #7999c8;
+
+  background: #f5f9ff;
+
+  box-shadow:
+    inset 2px 2px #ccc;
+}
+
+.selected-title {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.file-item {
+  padding: 5px;
+
+  border-top: 1px dotted #8ba1c2;
+
+  font-size: 13px;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

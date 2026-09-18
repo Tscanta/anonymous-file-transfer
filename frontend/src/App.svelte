@@ -1,23 +1,12 @@
 <script lang="ts">
-  import { createDrop } from "./lib/api";
-
+  let selectedFiles: File[] = [];
   let dropCode = "";
-  let createdDropCode = "";
-  let loading = false;
-  let error = "";
 
-  async function handleCreateDrop() {
-    loading = true;
-    error = "";
+  function handleFiles(event: Event) {
+    const input = event.target as HTMLInputElement;
 
-    try {
-      const data = await createDrop();
-
-      createdDropCode = data.drop_id;
-    } catch (err) {
-      error = "Could not create drop.";
-    } finally {
-      loading = false;
+    if (input.files) {
+      selectedFiles = Array.from(input.files);
     }
   }
 </script>
@@ -100,41 +89,39 @@
 
 
           <div class="action">
+            <label class="file-picker">
+              📁 &nbsp; Select Files
 
-            <button
-              class="retro-button"
-              onclick={handleCreateDrop}
-              disabled={loading}
-            >
-              {loading ? "Creating..." : "📄  Create a Drop"}
-            </button>
+              <input
+                type="file"
+                multiple
+                onchange={handleFiles}
+              />
+            </label>
 
             <small>
-              Generate a unique code to start sharing.
+              Select the files you want to transfer.
             </small>
 
-            {#if createdDropCode}
-              <div class="drop-created">
-                <div class="drop-created-title">
-                  DROP CREATED!
+
+            {#if selectedFiles.length > 0}
+
+              <div class="selected-files">
+
+                <div class="selected-title">
+                  {selectedFiles.length} file(s) selected:
                 </div>
 
-                <div class="drop-code">
-                  {createdDropCode}
-                </div>
-
-                <p>
-                  Enter this code on another device to access your files.
-                </p>
+                {#each selectedFiles as file}
+                  <div class="file-item">
+                    📄 {file.name}
+                  </div>
+                {/each}
               </div>
+              <button class="retro-button">
+                🚀 &nbsp; Create Drop
+              </button>
             {/if}
-
-            {#if error}
-              <div class="error">
-                {error}
-              </div>
-            {/if}
-
           </div>
 
 
