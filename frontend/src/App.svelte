@@ -11,6 +11,8 @@
 
   let openedDrop: {
   drop_id: string;
+  created_at: string;
+  expires_at: string | null;
   files: {
     file_id: string;
     filename: string;
@@ -27,6 +29,10 @@ let uploadError = "";
 
 let uploadProgress = 0;
 let currentUpload = "";
+
+function formatDropDate(date: string) {
+  return new Date(date).toLocaleString();
+}
 
 function handleDropFiles(event: Event) {
   const input = event.target as HTMLInputElement;
@@ -516,6 +522,22 @@ async function handleCreateDrop() {
     </div>
 
     <div class="drop-view-body">
+
+      <div class="drop-meta">
+  <div>
+    <strong>Created:</strong>
+    {formatDropDate(openedDrop.created_at)}
+  </div>
+
+      <div>
+        <strong>Expires:</strong>
+        {#if openedDrop.expires_at}
+          {formatDropDate(openedDrop.expires_at)}
+        {:else}
+          Never
+        {/if}
+      </div>
+    </div>
 
       <h2>Files in this drop</h2>
       <!-- your Add Files / Upload section -->

@@ -219,6 +219,24 @@ def get_drop(drop_id: str):
             detail="Drop not found"
         )
 
+    metadata_path = os.path.join(
+        drop_folder,
+        "metadata.json"
+    )
+
+    if not os.path.exists(metadata_path):
+        raise HTTPException(
+            status_code=500,
+            detail="Drop metadata not found"
+        )
+
+    with open(
+        metadata_path,
+        "r",
+        encoding="utf-8"
+    ) as file:
+        metadata = json.load(file)
+
     files = []
 
     for stored_filename in os.listdir(drop_folder):
@@ -242,6 +260,8 @@ def get_drop(drop_id: str):
 
     return {
         "drop_id": drop_id,
+        "created_at": metadata.get("created_at"),
+        "expires_at": metadata.get("expires_at"),
         "files": files
     }
 
