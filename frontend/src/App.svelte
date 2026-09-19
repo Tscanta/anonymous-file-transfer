@@ -201,35 +201,41 @@ async function handleCreateDrop() {
 }
 
   async function handleOpenDrop() {
-  if (!dropCode.trim()) {
-    openError = "Please enter a drop code.";
-    return;
-  }
-
-  opening = true;
-  openError = "";
-  openedDrop = null;
-
-  try {
-    const data = await getDrop(
-      dropCode.trim().toUpperCase()
-    );
-
-    openedDrop = data;
-
-  } catch (err) {
-    console.error(err);
-
-    if (err instanceof Error) {
-      openError = err.message;
-    } else {
-      openError = "Could not open drop.";
+    if (!dropCode.trim()) {
+      openError = "Please enter a drop code.";
+      return;
     }
 
-  } finally {
-    opening = false;
+    opening = true;
+    openError = "";
+    openedDrop = null;
+
+    try {
+      const data = await getDrop(
+        dropCode.trim().toUpperCase()
+      );
+
+      openedDrop = data;
+
+    } catch (err) {
+      console.error(err);
+
+      if (err instanceof Error) {
+        if (err.message === "Drop not found") {
+          openError =
+            "Drop not found. It may have expired, been deleted, or never existed.";
+        } else {
+          openError = err.message;
+        }
+      } else {
+        openError = "Could not open Drop.";
+      }
+
+    } finally {
+      opening = false;
+    }
   }
-  }
+
   async function handleDeleteDrop() {
   if (!openedDrop || !deleteToken) {
     return;
@@ -695,8 +701,14 @@ async function handleCreateDrop() {
 {/if}
 
 {#if openError}
-  <div class="open-error">
-    {openError}
+  <div class="drop-error">
+    <div class="drop-error-title">
+      DROP NOT FOUND
+    </div>
+
+    <div class="drop-error-message">
+      {openError}
+    </div>
   </div>
 {/if}
 
