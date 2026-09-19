@@ -990,3 +990,69 @@ footer a {
   font-size: 13px;
   line-height: 1.5;
 }
+
+.drop-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.copy-code-button {
+  padding: 5px 10px;
+  font-family: "Courier New", monospace;
+  font-size: 12px;
+  font-weight: bold;
+  color: #243b5d;
+  background: #dbe8f8;
+  border: 2px solid #7999c8;
+  box-shadow:
+    inset 1px 1px white,
+    inset -1px -1px #9aaec9;
+  cursor: pointer;
+}
+
+.copy-code-button:hover {
+  background: #cbdcf2;
+}
+
+.copy-code-button:active {
+  box-shadow:
+    inset 1px 1px #9aaec9,
+    inset -1px -1px white;
+}
+
+.drop-header-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.qr-container {
+  margin: 15px 0 20px;
+  padding: 15px;
+  text-align: center;
+  border: 2px solid #7999c8;
+  background: #eef5ff;
+  box-shadow:
+    inset 2px 2px white,
+    inset -2px -2px #a4b7d3;
+}
+
+.qr-code {
+  width: 220px;
+  height: 220px;
+  display: block;
+  margin: 0 auto;
+  image-rendering: pixelated;
+  background: white;
+  padding: 8px;
+  border: 2px solid #526f9e;
+}
+
+.qr-label {
+  margin-top: 10px;
+  font-family: "Courier New", monospace;
+  font-size: 12px;
+  color: #536887;
+}

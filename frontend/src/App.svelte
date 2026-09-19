@@ -1,5 +1,7 @@
 <script lang="ts">
   import { createDrop, uploadFile, getDrop, deleteDrop } from "./lib/api";
+  import { onMount } from "svelte";
+  import QRCode from "qrcode";
 
   let selectedFiles: File[] = [];
   let dropCode = "";
@@ -19,6 +21,13 @@
   }[];
 } | null = null;
 
+// Copy Drop Code
+let codeCopied = false; 
+
+//QR 
+let showQr = false;
+let qrCodeUrl = "";
+
 let opening = false;
 let openError = "";
 
@@ -29,6 +38,93 @@ let uploadError = "";
 
 let uploadProgress = 0;
 let currentUpload = "";
+
+async function toggleQr() {
+  if (!openedDrop) {
+    return;
+  }
+
+  if (showQr) {
+    showQr = false;
+    return;
+  }
+
+  try {
+    qrCodeUrl = await QRCode.toDataURL(
+      openedDrop.drop_id
+    );
+
+    showQr = true;
+  } catch (err) {
+    console.error("Could not generate QR code:", err);
+  }
+}
+
+async function copyDropCode() {
+  if (!openedDrop) {
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(
+      openedDrop.drop_id
+    );
+
+    codeCopied = true;
+
+    setTimeout(() => {
+      codeCopied = false;
+    }, 2000);
+
+  } catch (err) {
+    console.error("Could not copy Drop code:", err);
+  }
+}
+
+async function openDropFromUrl() {
+  const path = window.location.pathname;
+
+  if (!path.startsWith("/drop/")) {
+    return;
+  }
+
+  const dropId = path
+    .replace("/drop/", "")
+    .trim()
+    .toUpperCase();
+
+  if (!dropId) {
+    return;
+  }
+
+  dropCode = dropId;
+  opening = true;
+  openError = "";
+  openedDrop = null;
+
+  try {
+    const data = await getDrop(dropId);
+    openedDrop = data;
+  } catch (err) {
+    console.error(err);
+
+    if (err instanceof Error) {
+      if (err.message === "Drop not found") {
+        openError =
+          "Drop not found. It may have expired, been deleted, or never existed.";
+      } else {
+        openError = err.message;
+      }
+    } else {
+      openError = "Could not open Drop.";
+    }
+  } finally {
+    opening = false;
+  }
+}
+onMount(() => {
+  openDropFromUrl();
+});
 
 function formatDropDate(date: string) {
   return new Date(date).toLocaleString();
@@ -523,9 +619,39 @@ async function handleCreateDrop() {
   {#if openedDrop}
   <section class="drop-view panel">
 
-    <div class="panel-title">
-      :: drop {openedDrop.drop_id}
+    <div class="panel-title drop-header">
+  <span>:: drop {openedDrop.drop_id}</span>
+
+  <div class="drop-header-buttons">
+    <button
+      class="copy-code-button"
+      onclick={copyDropCode}
+    >
+      {codeCopied ? "✓ COPIED!" : "COPY CODE"}
+    </button>
+
+    <button
+      class="copy-code-button"
+      onclick={toggleQr}
+    >
+      {showQr ? "HIDE QR" : "SHOW QR"}
+    </button>
+  </div>
+</div>
+
+{#if showQr}
+  <div class="qr-container">
+    <img
+      src={qrCodeUrl}
+      alt={`QR code for Drop ${openedDrop.drop_id}`}
+      class="qr-code"
+    />
+
+    <div class="qr-label">
+      Scan to get Drop Code
     </div>
+  </div>
+{/if}
 
     <div class="drop-view-body">
 
