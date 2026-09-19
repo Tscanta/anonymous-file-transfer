@@ -6,10 +6,17 @@ import os
 import shutil
 import mimetypes
 import json
+import asyncio
 from datetime import datetime, timedelta
 
 
 app = FastAPI(title="Anonymous File Transfer")
+
+@app.on_event("startup")
+async def startup_event():
+    asyncio.create_task(
+        cleanup_expired_drops()
+    )
 
 # Fixing Cors Error - Cors = error when connecting frontend and backend, because both have different links
 app.add_middleware(
@@ -33,6 +40,69 @@ def generate_drop_id(length: int = 8) -> str:
 def generate_file_id() -> str:
     return secrets.token_urlsafe(16)
 
+async def cleanup_expired_drops():
+    while True:
+
+        now = datetime.utcnow()
+
+        if os.path.exists(UPLOAD_DIR):
+
+            for drop_id in os.listdir(UPLOAD_DIR):
+
+                drop_folder = os.path.join(
+                    UPLOAD_DIR,
+                    drop_id
+                )
+
+                if not os.path.isdir(drop_folder):
+                    continue
+
+                metadata_path = os.path.join(
+                    drop_folder,
+                    "metadata.json"
+                )
+
+                if not os.path.exists(metadata_path):
+                    continue
+
+                try:
+                    with open(
+                        metadata_path,
+                        "r",
+                        encoding="utf-8"
+                    ) as file:
+                        metadata = json.load(file)
+
+                    expires_at = metadata.get("expires_at")
+
+                    # Permanent Drop
+                    if expires_at is None:
+                        continue
+
+                    expiration_time = datetime.fromisoformat(
+                        expires_at
+                    )
+
+                    if now >= expiration_time:
+
+                        shutil.rmtree(drop_folder)
+
+                        drop_tokens.pop(
+                            drop_id,
+                            None
+                        )
+
+                        print(
+                            f"Expired Drop deleted: {drop_id}"
+                        )
+
+                except Exception as error:
+                    print(
+                        f"Could not check Drop {drop_id}: {error}"
+                    )
+
+        # Check once every minute
+        await asyncio.sleep(60)
 
 @app.get("/")
 def root():
@@ -137,7 +207,11 @@ def upload_file(
 
 @app.get("/drops/{drop_id}")
 def get_drop(drop_id: str):
-    drop_folder = os.path.join(UPLOAD_DIR, drop_id)
+
+    drop_folder = os.path.join(
+        UPLOAD_DIR,
+        drop_id
+    )
 
     if not os.path.exists(drop_folder):
         raise HTTPException(
@@ -157,14 +231,14 @@ def get_drop(drop_id: str):
             stored_filename
         )
 
-    if os.path.isfile(file_path):
+        if os.path.isfile(file_path):
 
-        file_id, filename = stored_filename.split("_", 1)
+            file_id, filename = stored_filename.split("_", 1)
 
-        files.append({
-            "file_id": file_id,
-            "filename": filename
-        })
+            files.append({
+                "file_id": file_id,
+                "filename": filename
+            })
 
     return {
         "drop_id": drop_id,
